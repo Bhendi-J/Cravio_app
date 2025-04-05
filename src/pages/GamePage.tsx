@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Trophy, Gift } from 'lucide-react';
 import { toast } from 'sonner';
+import FoodRunner from '@/components/games/FoodRunner';
 
 interface GameData {
   id: string;
@@ -20,7 +21,7 @@ const games: Record<string, GameData> = {
     id: 'food-runner',
     name: 'Food Runner',
     description: 'Deliver food and dodge obstacles in this fast-paced runner game!',
-    instructions: 'Use arrow keys or swipe to move left and right. Collect food items and avoid obstacles.'
+    instructions: 'Use arrow keys or swipe to move left and right. Collect falling food items to score points.'
   },
   'burger-stack': {
     id: 'burger-stack',
@@ -47,19 +48,12 @@ const GamePage: React.FC = () => {
   
   useEffect(() => {
     if (isGameActive) {
-      // Mock game logic - increases score randomly every second
-      const interval = setInterval(() => {
-        setScore(prev => prev + Math.floor(Math.random() * 10));
-      }, 1000);
-      
-      // End game after 15 seconds
+      // End game after 60 seconds
       const gameTimer = setTimeout(() => {
-        clearInterval(interval);
         endGame();
-      }, 15000);
+      }, 60000);
       
       return () => {
-        clearInterval(interval);
         clearTimeout(gameTimer);
       };
     }
@@ -82,6 +76,10 @@ const GamePage: React.FC = () => {
   const claimPoints = () => {
     toast.success(`Congratulations! You earned ${earnedPoints} reward points!`);
     setIsGameOver(false);
+  };
+  
+  const handleScoreUpdate = (newScore: number) => {
+    setScore(newScore);
   };
 
   if (!game) {
@@ -134,29 +132,18 @@ const GamePage: React.FC = () => {
                   Earn up to 100 points per play!
                 </Badge>
               </div>
-            ) : isGameActive ? (
-              <div className="text-center py-8">
+            ) : (
+              <div className="text-center py-4">
                 <div className="mb-6">
-                  <h2 className="text-4xl font-bold animate-bounce-subtle">{score}</h2>
+                  <h2 className="text-4xl font-bold">{score}</h2>
                   <p className="text-gray-500">Current Score</p>
                 </div>
                 
-                <div className="bg-gray-100 p-8 rounded-lg max-w-md mx-auto">
-                  <p className="text-lg font-medium mb-2">Game in Progress!</p>
-                  <p className="text-gray-600 mb-4">This is a placeholder for the actual game canvas.</p>
-                  <p className="text-gray-500 text-sm">In a real implementation, this would be a JavaScript game.</p>
+                <div className="max-w-xl mx-auto">
+                  {gameId === 'food-runner' && (
+                    <FoodRunner onScoreUpdate={handleScoreUpdate} gameActive={isGameActive} />
+                  )}
                 </div>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <h2 className="text-xl font-semibold mb-2">Game Over!</h2>
-                <p className="mb-6">Your final score: <span className="font-bold">{score}</span></p>
-                <Button onClick={startGame} variant="outline" className="mr-4">
-                  Play Again
-                </Button>
-                <Button onClick={claimPoints}>
-                  Claim {earnedPoints} Points
-                </Button>
               </div>
             )}
           </CardContent>
